@@ -1,0 +1,5 @@
+[[redirects]]
+  from = "/api/*"
+  to = "http://andersonprandini.duckdns.org:8082/:splat"
+  status = 200
+  force = true

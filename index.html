@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <title>Busca de Clientes</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            text-align: center; /* Centraliza os textos */
+        }
+        .search-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input {
+            padding: 8px;
+            text-transform: uppercase;
+            width: 100%;
+        }
+        button {
+            padding: 8px;
+            cursor: pointer;
+            margin-top: 10px; /* Espaço entre o campo e o botão */
+        }
+        table {
+            width: 80%;
+            margin: 20px auto;
+            border-collapse: collapse;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center; /* Centraliza os conteúdos das células */
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        tr:hover {
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+        #detalhes {
+            margin-top: 20px;
+            padding: 10px;
+            display: none;
+        }
+        #clientes-container {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>WORD PLASTIC</h1>
+    <h2>APP Pedidos</h2>
+    
+    <h3>Busca de Clientes</h3>
+    <div class="search-container">
+        <input type="text" id="busca" placeholder="Digite o nome, fantasia ou cidade">
+        <button onclick="carregarClientes()">Buscar</button>
+    </div>
+
+    <div id="clientes-container">
+        <table id="clientes-tabela">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Nome</th>
+                    <th>Fantasia</th>
+                    <th>Cidade</th>
+                </tr>
+            </thead>
+            <tbody id="clientes-lista">
+                <!-- Os resultados da busca aparecerão aqui -->
+            </tbody>
+        </table>
+    </div>
+
+    <div id="detalhes"></div>
+
+    <script>
+        function carregarClientes() {
+            let termo = document.getElementById("busca").value.trim();
+            if (termo === "") {
+                alert("Digite um nome para a busca!");
+                return;
+            }
+
+            document.getElementById("detalhes").style.display = "none";
+	    //let url = 'http://andersonprandini.duckdns.org:8082/clientes/' + encodeURIComponent(termo);
+            let url = '/api/clientes/' + encodeURIComponent(termo);
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let tabela = document.getElementById("clientes-lista");
+                    let container = document.getElementById("clientes-container");
+
+                    tabela.innerHTML = ""; // Limpa a tabela antes de adicionar novos dados
+
+                    if (data.length === 0) {
+                        tabela.innerHTML = "<tr><td colspan='4'>Nenhum cliente encontrado</td></tr>";
+                        container.style.display = "block";
+                        return;
+                    }
+
+                    data.forEach(cliente => {
+                        let tr = document.createElement("tr");
+                        tr.innerHTML = 
+                            <td>${cliente.CODIGO}</td>
+                            <td>${cliente.NOME}</td>
+                            <td>${cliente.FANTASIA}</td>
+                            <td>${cliente.CIDADE}</td>
+                        ;
+                        tr.onclick = function() {
+                            mostrarSomenteCliente(cliente);
+                        };
+                        tabela.appendChild(tr);
+                    });
+
+                    container.style.display = "block";
+                })
+                .catch(error => console.error("Erro ao buscar clientes:", error));
+        }
+
+        function mostrarSomenteCliente(cliente) {
+            let tabela = document.getElementById("clientes-lista");
+            
+            tabela.innerHTML = 
+                <tr>
+                    <td>${cliente.CODIGO}</td>
+                    <td>${cliente.NOME}</td>
+                    <td>${cliente.FANTASIA}</td>
+                    <td>${cliente.CIDADE}</td>
+                </tr>
+            ;
+
+            carregarDetalhes(cliente.CODIGO);
+        }
+
+        function carregarDetalhes(codigo) {
+//            let url = "http://andersonprandini.duckdns.org:8082/pedidos/" + codigo;            
+              let url = '/api/pedidos/' + codigo;
+
+
+            fetch(url)
+                .then(response => response.json())
+                .then(dados => {
+                    let detalhes = document.getElementById("detalhes");
+                    detalhes.innerHTML = "<h2>Detalhes do Pedido</h2>";
+
+                    if (dados.length === 0) {
+                        detalhes.innerHTML += "<p>Nenhum detalhe encontrado para este cliente.</p>";
+                    } else {
+                        let tabela = 
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Pedido</th>
+                                        <th>Data</th>
+                                        <th>Descrição</th>
+                                        <th>Quantidade</th>
+                                        <th>Preço</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        ;
+
+                        dados.forEach(item => {
+                            let dataFormatada = item.DATA.split("-").reverse().join("/"); // Converte YYYY-MM-DD para DD/MM/YYYY
+                            let precoFormatado = item.PRECO.toFixed(2).replace(".", ",");
+
+                            tabela += 
+                                <tr>
+                                    <td>${item.NUMERO}</td>
+                                    <td>${dataFormatada}</td>
+                                    <td>${item.DESCRICAO}</td>
+                                    <td>${item.QUANTIDADE}</td>
+                                    <td>R$ ${precoFormatado}</td>
+                                </tr>
+                            ;
+                        });
+
+                        tabela += "</tbody></table>";
+
+                        detalhes.innerHTML += tabela;
+                    }
+
+                    detalhes.style.display = "block";
+                })
+                .catch(error => console.error("Erro ao buscar detalhes do cliente:", error));
+        }
+    </script>
+
+</body>
+</html>
