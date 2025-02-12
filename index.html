@@ -94,8 +94,7 @@
             }
 
             document.getElementById("detalhes").style.display = "none";
-	    //let url = 'http://andersonprandini.duckdns.org:8082/clientes/' + encodeURIComponent(termo);
-            let url = '/api/clientes/' + encodeURIComponent(termo);
+	    let url = 'forcompsistemas.duckdns.org:8082/clientes/' + encodeURIComponent(termo);
 
             fetch(url)
                 .then(response => response.json())
@@ -146,8 +145,7 @@
         }
 
         function carregarDetalhes(codigo) {
-//            let url = "http://andersonprandini.duckdns.org:8082/pedidos/" + codigo;            
-              let url = '/api/pedidos/' + codigo;
+            let url = 'forcompsistemas.duckdns.org:8082/pedidos/" + codigo;            
 
 
             fetch(url)
